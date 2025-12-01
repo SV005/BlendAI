@@ -30,8 +30,12 @@ The system uses a **Multi-Agent Architecture** to ensure high-quality, functiona
 ---
 
 ### Step 1: Clone the Repository
+Create a New folder and open it with VS Code.
+Then, run these commands in VS Code 'cmd' terminal, one by one.
 ```
 git clone https://github.com/SV005/BlendAI.git
+```
+```
 cd BlendAI
 ```
 
@@ -50,7 +54,7 @@ Then Activate it.
 ### Step 3: Install Dependencies
 Install the required libraries from requirements.txt file.
 ```
-pip install -r requirements.txt
+pip install -r agent_service\requirements.txt
 ```
 
 ### Step 4: Configure API Key
@@ -73,17 +77,17 @@ pip install -r requirements.txt
 ## ⚡ Usage
 
 ### 1. Run the Agent Server
-Open your new cmd terminal in VS Code, ensure your virtual environment is active, and run the agent service:
+In your VS Code cmd terminal, ensure your virtual environment is active, and run the agent service:
 ```
 python -m agent_service.src.main
 ```
 *This starts the backend that communicates between the AI and Blender.*
 
 ### 2. Ask AI in Blender
-1.  Select a Mesh object in the 3D Viewport.
+1.  Go to the Blender and select a Mesh object in the 3D Viewport.
 2.  Go to the **AI Agent** panel.
 3.  Type your prompt.
-    *   *Example:* `"Add a Sphere and Extrude it's faces with Offset 1."`
+    *   *Example:* `"Add a UV Sphere and Extrude it's faces with Offset 1."`
 4.  Click **Ask**.
 
 After a moment of processing, the AI will create a new Geometry Nodes modifier on your object with the requested node setup!
