@@ -1,4 +1,4 @@
-# Blender AI Architect
+# BlendAI
 
 **Automate Geometry Nodes creation in Blender using AI agents.**
 
@@ -31,12 +31,13 @@ The system uses a **Multi-Agent Architecture** to ensure high-quality, functiona
 
 ### Step 1: Clone the Repository
 ```
-git clone https://github.com/yourusername/blender-ai-architect.git
-cd blender-ai-architect
+git clone https://github.com/SV005/BlendAI.git
+cd BlendAI
 ```
 
 ### Step 2: Create a viruel python environment.
-To install the dependencies create python (.venv).
+To install the dependencies create a seperate python virtual environment (venv). 
+
 **Windows:**
 ```
 python -m venv venv
@@ -47,7 +48,7 @@ Then Activate it.
 ```
 
 ### Step 3: Install Dependencies
-Install the required libraries for the Agent Development Kit and MCP server:
+Install the required libraries from requirements.txt file.
 ```
 pip install -r requirements.txt
 ```
@@ -62,7 +63,7 @@ pip install -r requirements.txt
 ### Step 5: Setup Blender Add-on
 1.  Open Blender.
 2.  Go to **Edit** -> **Preferences** -> **Add-ons**.
-3.  Click **Install...** and select the `blender_addon.zip` file (or the zipped `blender_addon` folder from this repo).
+3.  Click **Install...** and select the `addon.zip` zipped folder from this repo.
 4.  Enable the add-on by checking the box.
 5.  Open the **Sidebar (N-Panel)** in the 3D Viewport and find the **"AI Agent"** tab.
 6.  Click the **Start Server** button to initialize the Blender-side socket listener.
@@ -72,7 +73,7 @@ pip install -r requirements.txt
 ## ⚡ Usage
 
 ### 1. Run the Agent Server
-Open your terminal (VS Code or Command Prompt), ensure your virtual environment is active, and run the agent service:
+Open your new cmd terminal in VS Code, ensure your virtual environment is active, and run the agent service:
 ```
 python -m agent_service.src.main
 ```
