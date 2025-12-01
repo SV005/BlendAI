@@ -30,28 +30,27 @@ The system uses a **Multi-Agent Architecture** to ensure high-quality, functiona
 ---
 
 ### Step 1: Clone the Repository
-'''
+```
 git clone https://github.com/yourusername/blender-ai-architect.git
 cd blender-ai-architect
-'''
+```
 
 ### Step 2: Create a viruel python environment.
 To install the dependencies create python (.venv).
 **Windows:**
-'''
+```
 python -m venv venv
-'''
+```
 Then Activate it.
-'''
+```
 .\venv\Scripts\activate
-'''
+```
 
 ### Step 3: Install Dependencies
 Install the required libraries for the Agent Development Kit and MCP server:
-
-'''
+```
 pip install -r requirements.txt
-'''
+```
 
 ### Step 4: Configure API Key
 1.  Create a file named `.env` in the root directory.
@@ -74,11 +73,9 @@ pip install -r requirements.txt
 
 ### 1. Run the Agent Server
 Open your terminal (VS Code or Command Prompt), ensure your virtual environment is active, and run the agent service:
-
-'''
+```
 python -m agent_service.src.main
-'''
-
+```
 *This starts the backend that communicates between the AI and Blender.*
 
 ### 2. Ask AI in Blender
