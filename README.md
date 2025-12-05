@@ -29,20 +29,18 @@ The system uses a **Multi-Agent Architecture** to ensure high-quality, functiona
 
 ---
 
+This Setup is for *Windows* only. 
+
 ### Step 1: Clone the Repository
-Create a New folder and open it with VS Code.
-Then, run these commands in VS Code 'cmd' terminal, one by one.
+Choose your folder, where you want to download the files of this software.
+Then, run these commands in VS Code 'cmd' terminal.
 ```
 git clone https://github.com/SV005/BlendAI.git
-```
-```
-cd BlendAI
 ```
 
 ### Step 2: Create a viruel python environment.
 To install the dependencies create a seperate python virtual environment (venv). 
 
-**Windows:**
 ```
 python -m venv venv
 ```
@@ -59,7 +57,7 @@ pip install -r agent_service\requirements.txt
 
 ### Step 4: Configure API Key
 1.  Create a file named `.env` in the root directory.
-2.  Add your Gemini API key:
+2.  Add your Gemini API key in this file:
     ```
     GEMINI_API_KEY=your_actual_api_key_here
     ```
@@ -96,15 +94,12 @@ After a moment of processing, the AI will create a new Geometry Nodes modifier o
 
 
 ## 📂 Project Structure
-*   **`agent_service/src/agents_adk.py`** - **The Brain.** Defines the AI agents (Architect & Developer) and the orchestration logic.
-*   **`agent_service/mcp_server.py`** - **The Bridge.** An MCP server that exposes Blender tools to the AI agents.
-*   **`addon/tools.py`** - **The Hands.** Python functions injected into Blender to execute scripts, inspect scenes, and manage nodes.
+*   **`agent_service/src/agents_adk.py`** - Defines the AI agents (Architect & Developer) and the orchestration logic.
+*   **`agent_service/mcp_server.py`** - An MCP server that exposes Blender tools to the AI agents.
+*   **`addon/tools.py`** - Python functions injected into Blender to execute scripts, inspect scenes, and manage nodes.
 *   **`requirements.txt`** - List of Python dependencies.
 
 ---
 
 ## 🤝 Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-This project is licensed under the **Apache 2.0 License**.
