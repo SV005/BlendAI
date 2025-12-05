@@ -112,7 +112,6 @@ def execute_script(script_content: str) -> str:
     result = send_to_blender("execute_script", {"script_content": script_content})
     return json.dumps(result, indent=2)
 
-# --- ADDED THIS MISSING TOOL ---
 @mcp.tool()
 def ensure_geo_modifier(object_name: str = None) -> str:
     """

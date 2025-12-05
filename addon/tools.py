@@ -96,8 +96,8 @@ def search_node_types(query: str) -> Dict[str, Any]:
                     "label": label,
                     "description": desc
                 })
-    # Limit to 20 to keep context compact
-    return _ok(matches[:20])
+    # Limit to 5 to keep context compact
+    return _ok(matches[:5])
 
 def get_node_details(node_internal_id: str) -> Dict[str, Any]:
     """
@@ -131,7 +131,7 @@ def get_node_details(node_internal_id: str) -> Dict[str, Any]:
             "description": description,
             "inputs": [],
             "outputs": [],
-            "parameters": []
+            # "parameters": []
         }
 
         # Inputs
@@ -504,7 +504,7 @@ def execute_script(script_content: str) -> Dict[str, Any]:
             bpy.context.view_layer.update()
         except Exception:
             pass
-        return _ok("Success: Script executed and view layer updated.")
+        return _ok("Success.")
     except Exception as e:
         return _err(f"Python Execution Error: {e}")
 

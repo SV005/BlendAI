@@ -12,6 +12,16 @@ from google.adk.sessions import InMemorySessionService
 from google.adk.tools import FunctionTool
 from google.adk.tools.tool_context import ToolContext
 from google.genai import types
+from google.adk.tools import exit_loop 
+
+# Enable for Debugging Logs.
+  # from google.adk.plugins.logging_plugin import LoggingPlugin
+  # logging.basicConfig(
+  #     level=logging.DEBUG,  # <--- This is the key switch
+  #     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  # )
+  # logging.getLogger('google.adk').setLevel(logging.DEBUG)
+
 
 # MCP Integration
 from google.adk.tools.mcp_tool.mcp_toolset import McpToolset
@@ -39,42 +49,43 @@ blender_mcp_toolset = McpToolset(
     )
 )
 
-# --- 2. DEFINE SPECIAL TOOLS ---
+# --- 2. DEFINE AGENTS ---
 
-def finish_task(tool_context: ToolContext) -> Dict:
-    """
-    Call this tool ONLY when the script has executed successfully 
-    and the geometry nodes are working as requested.
-    """
-    # Signals the loop to stop
-    tool_context.actions.escalate = True
-    return {"status": "Task Completed Successfully"}
-
-finish_tool = FunctionTool(finish_task)
-
-# --- 3. DEFINE AGENTS ---
-
-# Agent 1: Architect (Optimized for JSON Output)
+# Agent 1: Architect output JSON structured plan.
 # Role: Analyzes scene, creates plan, does NOT write code.
 architect_agent = LlmAgent(
     name="Architect",
     model=MODEL_NAME,
+    generate_content_config= types.GenerateContentConfig(
+    max_output_tokens=5000,
+    temperature=0.3,
+    ),
+
     instruction="""
-    You are a Senior Blender Solutions Architect.
-    
-    Goal: Analyze the user request and create a technical execution plan.
+    You are an Expert Architect/Planner for creating a Blender Geometry Node Setup.
+    Goal: Analyze the user request and create a technical plan for it.
     
     Steps:
-    1. CALL 'get_current_context' to understand the active object.
-    2. CALL 'ensure_geo_modifier' to make sure a node tree exists.
-    3. Output a plan in STRICT JSON format. Do NOT chat.
+    1. CALL 'get_current_context' tool to understand the active object and it's current state.
+    2. If, don't find any applied Gometry Node Modifier on the active object:
+        - Then, only CALL 'ensure_geo_modifier' tool.
+    3. CALL 'get_node_tree_json' tool with active object name to understand it's current node tree structure.
+    4. Based on the user request and results of Step 1, 2, and 3. DESIGN a step-by-step plan in JSON to implement the required Geometry Nodes setup. .
     
-    JSON Structure:
+     JSON Structure:
     {
-      "objective": "Brief summary",
-      "required_nodes": ["List", "Of", "Node", "Names"],
-      "steps": ["Step 1 logic", "Step 2 logic"]
+      "objective": "Brief summary of plan",
+      "details": ["object_name", "geometry_node_modifier_name", "node_tree_name"],
+      "required_nodes": ["List_Of_Node_Names", "..."],
+      "plan_steps": ["plan_step 1 logic", "plan_step 2 logic", "..."]
     }
+
+    Only do this, when you have no other choice:
+       - If you unsure of node names, their parameters, and details that you need to add, then CALL 'search_node_types' and 'get_node_details' tools to get the list of nodes and their parameters.
+    
+    Constraints:
+    - Just output the JSON plan as per the structure above.
+    - Do NOT write any code here.
     """,
     tools=[blender_mcp_toolset],
     output_key="technical_plan"
@@ -85,42 +96,39 @@ architect_agent = LlmAgent(
 developer_agent = LlmAgent(
     name="Developer",
     model=MODEL_NAME,
+    generate_content_config= types.GenerateContentConfig(
+    max_output_tokens=5000,
+    temperature=0.3,
+    ),
     instruction="""
-    You are an Expert Blender Python Developer.
+    You are an Expert Python script developer for Blender geometry node setup "only".
     
-    Input: Read the 'technical_plan'.
-    Goal: Create valid Geometry Nodes using the 'bpy' Python API.
-    
-    Operational Loop:
-    1. WRITE & EXECUTE: 
-       - Generate the full Python script.
-       - IMMEDIATELY call the 'execute_script' tool with this script content.
-    
-    2. ANALYZE RESULT:
-       - If the tool returns "Success":
-         - Output the final code in a markdown block.
-         - Call 'finish_task'.
-       - If the tool returns an Error (e.g., AttributeError, NameError):
-         - Use 'search_node_types' if you guessed the wrong node class name.
-         - Rewrite the script to fix the bug.
-         - Call 'execute_script' again.
-         
+    Steps:
+      1. Read this json 'technical plan'- {technical_plan}.
+      2. WRITE a python script based on the plan.
+      3. IMMEDIATELY call the 'execute_script' tool with the script.
+      4. ANALYZE the result:
+         - If return is "Success".
+             - Call 'exit_loop' tool.
+         - If return is an Error (e.g., AttributeError, NameError):
+             - Then, try to solve the error in the next response iteration.
+
     Constraints:
-    - Use 'bpy.data.node_groups' to find the tree.
-    - Always clear default nodes before adding new ones.
-    - Link nodes correctly using 'tree.links.new()'.
+    - Don't add any dangerous imports (os, subprocess) and other (unsafe code and unuseful code).
+    - Don't add code which can break or crash the blender.
+    - Focus only on Geometry Nodes related code.
     """,
-    tools=[blender_mcp_toolset, finish_tool],
-    output_key="execution_result"
+    output_key="Script",
+    tools=[blender_mcp_toolset, exit_loop],
 )
 
-# --- 4. PIPELINE SETUP ---
+# --- 3. PIPELINE SETUP ---
 
 # The Developer talks to itself (and the tools) until it succeeds or hits the limit.
 coding_loop = LoopAgent(
     name="DevLoop",
     sub_agents=[developer_agent],
-    max_iterations=5  # Allow 5 attempts to fix bugs
+    max_iterations=3  # Allow 3 attempts to fix bugs
 )
 
 # Linear flow: Plan -> Build
@@ -129,15 +137,16 @@ main_pipeline = SequentialAgent(
     sub_agents=[architect_agent, coding_loop]
 )
 
-# --- 5. RUNNER ---
+# --- 4. RUNNER ---
 session_service = InMemorySessionService()
 runner = Runner(
     agent=main_pipeline,
     app_name="BlenderAgentService",
-    session_service=session_service
+    session_service=session_service, 
+    # plugins=[LoggingPlugin()],   # Enable for Debugging Logs.
 )
 
-# --- 6. PUBLIC API ---
+# --- 5. PUBLIC API ---
 
 async def run_blender_pipeline(user_prompt: str):
     """
@@ -147,10 +156,6 @@ async def run_blender_pipeline(user_prompt: str):
         # Construct the initial prompt
         full_prompt = f"""
         User Request: {user_prompt}
-        
-        System Note: 
-        - Check 'get_current_context' first.
-        - If the user asks for something complex, break it down in the plan.
         """
         
         message = types.Content(role="user", parts=[types.Part(text=full_prompt)])
@@ -192,7 +197,7 @@ async def run_blender_pipeline(user_prompt: str):
             }
         else:
             return {
-                "text": final_text or "Task finished (no code detected).", 
+                "text": "Task finished.", 
                 "code": None, 
                 "status": "COMPLETED"
             }
